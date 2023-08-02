@@ -3,6 +3,7 @@ package com.example.pdfreader
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.graphics.Path
 import android.graphics.pdf.PdfRenderer
 import android.os.Build
@@ -10,6 +11,7 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.KeyEvent
 import android.view.WindowMetrics
 import android.widget.Button
 import android.widget.FrameLayout
@@ -24,6 +26,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Stack
+import java.util.concurrent.locks.Lock
 
 
 // PDF sample code from
@@ -49,8 +52,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val layout = findViewById<ScrollView>(R.id.pdfLayout)
+        val layout = findViewById<LockableScrollView>(R.id.pdfLayout)
         layout.isEnabled = true
+
+        var scroll = false
 
         pageImage = PDFimage(this)
         layout.addView(pageImage)
@@ -80,19 +85,30 @@ class MainActivity : AppCompatActivity() {
             highlight.isChecked = false
             erase.isChecked = false
             pageImage.tool = 0
+            layout.setScrollingEnabled(false)
         }
 
         highlight.setOnClickListener {
             pen.isChecked = false
             erase.isChecked = false
             pageImage.tool = 1
+            layout.setScrollingEnabled(false)
         }
 
         erase.setOnClickListener {
             highlight.isChecked = false
             pen.isChecked = false
             pageImage.tool = 2
+            layout.setScrollingEnabled(false)
         }
+
+        var scrollBttn = findViewById<ToggleButton>(R.id.scroll)
+        scrollBttn.setOnClickListener{
+            scroll = !scroll
+            layout.setScrollingEnabled(scroll)
+        }
+
+
 
         var undo = findViewById<Button>(R.id.undo)
         var redo = findViewById<Button>(R.id.redo)
@@ -119,14 +135,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        var layout = findViewById<LockableScrollView>(R.id.pdfLayout)
         Log.d(LOGNAME, "Configuration changed")
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Log.d(LOGNAME, "Changed to landscape")
+
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Log.d(LOGNAME, "Changed to portrait")
 
         }
     }
+
 
     override fun onStop() {
         super.onStop()

@@ -23,31 +23,31 @@
 
         <Button
             android:id="@+id/button1"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:text="Prev"
+            android:text="Prv"
             android:layout_marginEnd="10dp"/>
 
         <Button
             android:id="@+id/button2"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:text="Next"
+            android:text="Nxt"
             android:layout_marginEnd="10dp"/>
 
         <Button
             android:id="@+id/undo"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:text="Undo"
+            android:text="UND"
             android:layout_marginEnd="10dp"/>
 
         <Button
             android:id="@+id/redo"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:text="Redo"
-            android:layout_marginEnd="50dp"/>
+            android:text="RDO"
+            android:layout_marginEnd="30dp"/>
         <TextView
             android:id="@+id/pdfTitle"
             android:layout_width="wrap_content"
@@ -57,36 +57,44 @@
             android:textColor="@color/black"
             android:layout_gravity="center_vertical"
             android:text="Hello"
-            android:layout_marginEnd="50dp"/>
+            android:layout_marginEnd="30dp"/>
 
         <ToggleButton
             android:id="@+id/draw"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:textOn="Draw"
-            android:textOff="Draw"
+            android:textOn="DRW"
+            android:textOff="DRW"
             android:checked="true"
             android:layout_marginEnd="10dp"/>
         <ToggleButton
             android:id="@+id/highlight"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:textOn="Highlight"
-            android:textOff="Highlight"
+            android:textOn="HLT"
+            android:textOff="HLT"
             android:checked="false"
             android:layout_marginEnd="10dp"/>
         <ToggleButton
             android:id="@+id/erase"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:textOn="Erase"
-            android:textOff="Erase"
+            android:textOn="ERS"
+            android:textOff="ERS"
+            android:checked="false"
+            android:layout_marginEnd="10dp"/>
+        <ToggleButton
+            android:id="@+id/scroll"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:textOn="SCR"
+            android:textOff="SCR"
             android:checked="false"
             android:layout_marginEnd="10dp"/>
 
     </LinearLayout>
 
-    <ScrollView
+    <com.example.pdfreader.LockableScrollView
         android:id="@+id/pdfLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
