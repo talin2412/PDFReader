@@ -16,9 +16,10 @@ class PDFimage  // constructor
 
     // drawing path
     var path: Path? = null
-    var paths = mutableListOf<Pair<Int, Path?>>()
+    var paths = mutableMapOf<Int, MutableList<Pair<Int, Path?>>>()
 
     var tool = 0
+    var currPage = 0
 
     // image to display
     var bitmap: Bitmap? = null
@@ -50,8 +51,8 @@ class PDFimage  // constructor
         alpha = 0
     }
 
-    var undo = Stack<List<Pair<Pair<Int, Path?>,Int>>>()
-    var redo = Stack<List<Pair<Pair<Int, Path?>,Int>>>()
+    var undo = mutableMapOf<Int, Stack<List<Pair<Pair<Int, Path?>,Int>>>>()
+    var redo = mutableMapOf<Int, Stack<List<Pair<Pair<Int, Path?>,Int>>>>()
 
     // capture touch events (down/move/up) to create a path
     // and use that to create a stroke that we can draw
@@ -75,19 +76,19 @@ class PDFimage  // constructor
                 var newPath = Pair(tool, path)
 
                 if (tool != 2) {
-                    paths.add(newPath)
-                    undo.push(mutableListOf<Pair<Pair<Int, Path?>,Int>>(Pair(newPath, tool)))
+                    paths[currPage]?.add(newPath)
+                    undo[currPage]?.push(mutableListOf<Pair<Pair<Int, Path?>,Int>>(Pair(newPath, tool)))
                 } else {
                     var erasedPaths = mutableListOf<Pair<Pair<Int, Path?>,Int>>()
-                    for (pathVar in paths.reversed()) {
+                    for (pathVar in paths[currPage]!!.reversed()) {
                         val result = Path()
                         result.op(path!!, pathVar.second!!, Path.Op.INTERSECT)
                         if (!result.isEmpty) {
                             erasedPaths.add(Pair(pathVar, tool))
-                            paths.remove(pathVar)
+                            paths[currPage]?.remove(pathVar)
                         }
                     }
-                    undo.push(erasedPaths)
+                    undo[currPage]?.push(erasedPaths)
                 }
             }
         }
@@ -95,30 +96,30 @@ class PDFimage  // constructor
     }
 
     fun undoCmmd() {
-        if (!undo.empty()) {
-            var cmmdList = undo.pop()
-            for (cmmd in cmmdList) {
+        if (!undo[currPage]?.empty()!!) {
+            var cmmdList = undo[currPage]?.pop()
+            for (cmmd in cmmdList!!) {
                 if (cmmd.second != 2) {
-                    paths.remove(cmmd.first)
+                    paths[currPage]?.remove(cmmd.first)
                 } else {
-                    paths.add(cmmd.first)
+                    paths[currPage]?.add(cmmd.first)
                 }
             }
-            redo.push(cmmdList)
+            redo[currPage]?.push(cmmdList)
         }
     }
 
     fun redoCmmd() {
-        if (!redo.isEmpty()) {
-            var cmmdList = redo.pop()
-            for (cmmd in cmmdList) {
+        if (!redo[currPage]?.isEmpty()!!) {
+            var cmmdList = redo[currPage]?.pop()
+            for (cmmd in cmmdList!!) {
                 if (cmmd.second != 2) {
-                    paths.add(cmmd.first)
+                    paths[currPage]?.add(cmmd.first)
                 } else {
-                    paths.remove(cmmd.first)
+                    paths[currPage]?.remove(cmmd.first)
                 }
             }
-            undo.push(cmmdList)
+            undo[currPage]?.push(cmmdList)
         }
     }
 
@@ -139,7 +140,8 @@ class PDFimage  // constructor
             setImageBitmap(bitmap)
         }
         // draw lines over it
-        for (path in paths) {
+        var listTo = paths[currPage]
+        for (path in listTo!!) {
             if (path.first == 1) {
                 setBrush(highlightPen)
             } else if (path.first == 0) {

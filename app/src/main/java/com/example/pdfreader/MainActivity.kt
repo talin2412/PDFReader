@@ -1,22 +1,30 @@
 package com.example.pdfreader
 
 import android.content.Context
-import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.Path
 import android.graphics.pdf.PdfRenderer
+import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
+import android.util.DisplayMetrics
 import android.util.Log
+import android.view.WindowMetrics
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.ToggleButton
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import org.w3c.dom.Text
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.Stack
+
 
 // PDF sample code from
 // https://medium.com/@chahat.jain0/rendering-a-pdf-document-in-android-activity-fragment-using-pdfrenderer-442462cb8f9a
@@ -37,10 +45,11 @@ class MainActivity : AppCompatActivity() {
     lateinit var pageImage: PDFimage
     lateinit var pageNum: TextView
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val layout = findViewById<LinearLayout>(R.id.pdfLayout)
+        val layout = findViewById<ScrollView>(R.id.pdfLayout)
         layout.isEnabled = true
 
         pageImage = PDFimage(this)
@@ -107,22 +116,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        Log.d(LOGNAME, "Configuration changed")
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.d(LOGNAME, "changed to landscape")
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            pageImage.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            pageImage.requestLayout()
+            Log.d(LOGNAME, "Changed to landscape")
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Log.d(LOGNAME, "changed to portrait")
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            pageImage.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            pageImage.requestLayout()
+            Log.d(LOGNAME, "Changed to portrait")
+
         }
     }
 
@@ -178,6 +180,16 @@ class MainActivity : AppCompatActivity() {
         currentPage = pdfRenderer.openPage(index)
         currPageIndex = index
         pageNum.text = "Page ${currPageIndex + 1}/${pdfRenderer.pageCount}"
+        pageImage.currPage = index
+        if (pageImage.paths[index] == null) {
+            pageImage.paths[index] = mutableListOf<Pair<Int, Path?>>()
+        }
+        if (pageImage.undo[index] == null) {
+            pageImage.undo[index] = Stack<List<Pair<Pair<Int, Path?>,Int>>>()
+        }
+        if (pageImage.redo[index] == null) {
+            pageImage.redo[index] = Stack<List<Pair<Pair<Int, Path?>,Int>>>()
+        }
 
         if (currentPage != null) {
             // Important: the destination bitmap must be ARGB (not RGB).
